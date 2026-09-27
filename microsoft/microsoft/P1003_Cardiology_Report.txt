@@ -1,0 +1,20 @@
+PATIENT CARDIOLOGY REPORT
+
+Patient ID: P1003
+Patient Name: Rahul Verma
+
+Department: Cardiology
+Report Type: Cardiology
+Doctor: Dr Suresh
+
+Report Date: 26 September 2026
+Status: Reviewed
+
+Heart Rate: 76 BPM
+Blood Pressure: 118/78 mmHg
+
+ECG Finding:
+Normal sinus rhythm observed.
+
+This is a fictional patient report created
+for an Azure college project demonstration.

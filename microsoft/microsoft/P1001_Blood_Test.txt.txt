@@ -1,0 +1,17 @@
+PATIENT BLOOD TEST REPORT
+
+Patient ID: P1001
+Patient Name: John Kumar
+
+Department: Cardiology
+Report Type: Blood Test
+Doctor: Dr Ravi
+
+Report Date: 26 September 2026
+Status: Reviewed
+
+Hemoglobin: 14.2 g/dL
+Blood Pressure: 120/80 mmHg
+
+This is a fictional patient report created
+for an Azure college project demonstration.

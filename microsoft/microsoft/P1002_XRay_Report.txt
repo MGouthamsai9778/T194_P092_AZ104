@@ -1,0 +1,18 @@
+P1002_XRay_Report.txtPATIENT X-RAY REPORT
+
+Patient ID: P1002
+Patient Name: Priya Sharma
+
+Department: Orthopedics
+Report Type: X-Ray
+Doctor: Dr Anil
+
+Report Date: 26 September 2026
+Status: Pending
+
+X-Ray Finding:
+No major abnormality detected.
+Further clinical evaluation is recommended.
+
+This is a fictional patient report created
+for an Azure college project demonstration.

@@ -1,0 +1,186 @@
+import os
+from flask import Flask, request, render_template_string, Response
+from azure.storage.blob import BlobServiceClient
+
+ACCOUNT_NAME = "patientreports2026d123"
+CONTAINER_NAME = "patient-reports"
+
+ACCOUNT_KEY = os.environ.get("ACCOUNT_KEY")
+
+if not ACCOUNT_KEY:
+    raise RuntimeError("ACCOUNT_KEY is not set. Run: export ACCOUNT_KEY=...")
+
+blob_service_client = BlobServiceClient(
+    account_url=f"https://{ACCOUNT_NAME}.blob.core.windows.net",
+    credential=ACCOUNT_KEY
+)
+
+container_client = blob_service_client.get_container_client(CONTAINER_NAME)
+
+app = Flask(name)
+
+HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Healthcare Patient Report Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f5f7fa;
+        }
+
+        h1 {
+            color: #1f2937;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 18px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #e5e7eb;
+        }
+
+        a {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .message {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Healthcare Patient Report Search</h1>
+
+<form method="GET">
+    <input type="text" name="patient_id" placeholder="Patient ID"
+           value="{{ patient_id }}">
+
+    <input type="text" name="department" placeholder="Department"
+           value="{{ department }}">
+
+    <input type="text" name="status" placeholder="Status"
+           value="{{ status }}">
+
+    <button type="submit">Search</button>
+</form>
+
+{% if searched %}
+
+    {% if results %}
+
+    <table>
+        <tr>
+            <th>Patient ID</th>
+            <th>Patient Name</th>
+            <th>Report Type</th>
+            <th>Department</th>
+            <th>Doctor</th>
+            <th>Status</th>
+            <th>Year</th>
+            <th>File</th>
+        </tr>
+
+        {% for r in results %}
+        <tr>
+            <td>{{ r.patient_id }}</td>
+            <td>{{ r.patient_name }}</td>
+            <td>{{ r.report_type }}</td>
+            <td>{{ r.department }}</td>
+            <td>{{ r.doctor }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.year }}</td>
+            <td>
+                <a href="/report/{{ r.file_name }}" target="_blank">
+                    Open Report
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+    {% else %}
+
+    <div class="message">
+        No matching patient record found.
+    </div>
+
+    {% endif %}
+
+{% endif %}
+
+</body>
+</html>
+"""
+
+
+@app.route("/")
+def index():
+
+    patient_id = request.args.get("patient_id", "").strip()
+    department = request.args.get("department", "").strip()
+    status = request.args.get("status", "").strip()
+
+    searched = bool(patient_id or department or status)
+
+    results = []
+
+    if searched:
+
+        conditions = []
+
+        if patient_id:
+            conditions.append(f'"PatientID"=\'{patient_id}\'')
+
+        if department:
+            conditions.append(f'"Department"=\'{department}\'')
+
+        if status:
+            conditions.append(f'"Status"=\'{status}\'')
+
+        tag_query = " AND ".join(conditions)
+
+        try:
+            blobs = container_client.find_blobs_by_tags(tag_query)
+
+            for blob in blobs:
